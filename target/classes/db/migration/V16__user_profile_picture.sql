@@ -1,0 +1,2 @@
+ALTER TABLE pelycan.users
+    ADD COLUMN IF NOT EXISTS profile_picture VARCHAR(1000);

@@ -1,0 +1,101 @@
+server:
+  port: ${PORT:4000}
+
+spring:
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+  application:
+    name: pelycan-api
+  datasource:
+    url: ${PELYCAN_JDBC_URL:jdbc:postgresql://localhost:5432/pelycan}
+    username: ${DATABASE_USERNAME:pelycan}
+    password: ${DATABASE_PASSWORD:pelycan}
+    hikari:
+      maximum-pool-size: 20
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        default_schema: pelycan
+        jdbc:
+          time_zone: UTC
+  flyway:
+    schemas: pelycan
+    default-schema: pelycan
+    locations: classpath:db/migration
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+  cache:
+    type: ${PELYCAN_CACHE_TYPE:redis}
+    redis:
+      time-to-live: 300000
+
+pelycan:
+  jwt:
+    secret: ${JWT_SECRET:change-me-in-production-min-32-characters-long}
+    expiration-hours: 24
+  cors:
+    allowed-origins: ${CORS_ORIGINS:http://localhost:3000,http://localhost:4000}
+  aws:
+    region: ${AWS_REGION:eu-west-3}
+    s3:
+      bucket: ${AWS_S3_BUCKET:}
+      presign-duration-minutes: 15
+  cloudinary:
+    cloud-name: ${CLOUDINARY_CLOUD_NAME:}
+    api-key: ${CLOUDINARY_API_KEY:}
+    api-secret: ${CLOUDINARY_API_SECRET:}
+  agora:
+    app-id: ${AGORA_APP_ID:}
+    app-certificate: ${AGORA_APP_CERTIFICATE:}
+    token-ttl-seconds: 3600
+  firebase:
+    credentials-path: ${FIREBASE_CREDENTIALS_PATH:}
+    admin-notify-enabled: ${FIREBASE_ADMIN_NOTIFY:true}
+  speech:
+    api-key: ${GOOGLE_SPEECH_API_KEY:}
+    default-language: ${GOOGLE_SPEECH_LANGUAGE:fr-FR}
+  sms:
+    enabled: ${SMS_ENABLED:false}
+    account-sid: ${TWILIO_ACCOUNT_SID:}
+    auth-token: ${TWILIO_AUTH_TOKEN:}
+    from-number: ${TWILIO_FROM_NUMBER:}
+    default-country-code: ${SMS_DEFAULT_COUNTRY_CODE:33}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+      show-components: always
+
+logging:
+  level:
+    com.pelycan: INFO
+
+---
+# Sans Redis (dev local) : PELYCAN_CACHE_TYPE=simple
+spring:
+  config:
+    activate:
+      on-property:
+        name: spring.cache.type
+        having-value: simple
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.redis.RedisReactiveAutoConfiguration
+management:
+  health:
+    redis:
+      enabled: false
